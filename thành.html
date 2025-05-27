@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Move Transfer Inbound Tool</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- SweetAlert2 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            position: relative;
+            background: #ffffff;
+            border: 5px solid transparent; /* Tạo border transparent để sử dụng hiệu ứng */
+            border-radius: 10px;
+            padding: 30px;
+            width: 600px;
+            text-align: center;
+            animation: border-spin 4s linear infinite; /* Animation để chạy gradient */
+        }
+
+        @keyframes border-spin {
+            0% {
+                border-image-source: conic-gradient(
+                    from 0deg,
+                    red,
+                    orange,
+                    yellow,
+                    green,
+                    blue,
+                    purple,
+                    red
+                );
+            }
+            100% {
+                border-image-source: conic-gradient(
+                    from 360deg,
+                    red,
+                    orange,
+                    yellow,
+                    green,
+                    blue,
+                    purple,
+                    red
+                );
+            }
+        }
+
+        .container {
+            border-image-slice: 1; /* Để gradient chỉ áp dụng cho viền */
+        }
+
+        .container h1 {
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 32px;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .input-group input {
+            width: 95%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 20px;
+        }
+
+        .output-group {
+            margin-top: 30px;
+        }
+
+        .output {
+            background: #f9f9f9;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 50px;
+            color: #333;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .output.class-a {
+            background-color: #d4f8d4; /* Light Green */
+        }
+
+        .output.class-b {
+            background-color: #fff8b3; /* Light Yellow */
+        }
+
+        .output.class-c {
+            background-color: #f8d4d4; /* Light Red */
+        }
+
+        #loadingIndicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 100000;
+            color: #ffffff; /* White icon color */
+        }
+
+        #loadingIndicator i {
+            font-size: 3rem; /* Adjust icon size */
+        }
+
+        .info {
+            font-size: 30px;
+            color: #333;
+            /* how to align left */
+            text-align: left;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingIndicator" style="display: none;">
+        <i class="fas fa-spinner fa-spin"></i>
+    </div>
+
+    <div class="container">
+        <h1>Sort MTB Tool</h1>
+        <div class="input-group">
+            <input type="text" id="mtbInput" placeholder="Enter MTB ID" />
+        </div>
+        <div class="output-group">
+            <div class="output" id="mtbID">--</div> 
+            <div class="output" id="skuQty">--</div>
+ 	    <div class="output" id="mtvnID">--</div>
+            <div class="output" id="ibID">--</div>
+        </div>
+
+        <div class="info" id="id"/*id*/></div> 
+        <div class="info" id="name"/*name*/></div> 
+    </div>
+    <script>
+        let mtb_data = []; /*sku_data*/
+
+
+        function load_data() {
+            return fetch('https://script.google.com/macros/s/AKfycby_LN7am8GywYkhtPZKpklksvNASXX3v_v2LI7i1MQNGXxE6YUK8QanDgL7IlwfF0agNA/exec')
+                .then(res => res.json())
+                .then(data => {
+                    mtb_data = data.content; /*sku_data*/
+                    console.log("Dữ liệu MTB đã tải xong.");
+                });
+        }
+
+        async function load_data_first() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            await load_data();
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('mtbInput').focus();
+        }
+        document.getElementById('mtbInput').focus();
+        load_data_first()
+
+        const mtbInput = document.getElementById('mtbInput');
+        const mtbID = document.getElementById('mtbID');
+        const skuQty = document.getElementById('skuQty');
+        const mtvnID = document.getElementById('mtvnID');
+        const ibID = document.getElementById('ibID');
+        const id = document.getElementById('id');
+        const name = document.getElementById('name');
+
+       mtbInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const mtb = mtbInput.value.trim();
+                if (mtb) {
+                    const findMtb = mtb_data.find(item => item[6] === mtb);
+                    if (findMtb === undefined) {
+                        mtbID.classList.remove('class-a', 'class-b', 'class-c');
+                        mtbID.textContent = "--";
+                        skuQty.textContent = "--";
+                        mtvnID.textContent = "--";
+                        ibID.textContent = "--";
+                        id.textContent = "Không tìm thấy MTB ID";
+                        name.textContent = ""
+                        document.getElementById('mtbInput').value = "";
+                        alert('Không tìm thấy MTB ID');
+                        return;
+                    }
+                    let sku_id = findMtb[0]
+                    let sku_name = findMtb[1]
+                    let mtvn_id = findMtb[4]
+                    let ib_id = findMtb[8]
+                    let mtb_id = findMtb[6]
+                    let qty_id = findMtb[3]
+
+                    // [sku_id, sku_name,mtvn_id,ib_id, mtb_id, qty_id] = findMtb
+
+                    mtbID.textContent = mtb_id;
+                    skuQty.textContent = qty_id;
+                    mtvnID.textContent = mtvn_id;
+                    ibID.textContent = ib_id;
+                    id.textContent = sku_id
+                    name.textContent = sku_name
+                    
+                    mtbID.classList.remove('class-a', 'class-b', 'class-c');
+                    mtbID.classList.add('class-a');
+		    skuQty.classList.remove('class-a', 'class-b', 'class-c');
+                    skuQty.classList.add('class-b');
+                    mtvnID.classList.remove('class-a', 'class-b', 'class-c');
+                    mtvnID.classList.add('class-c');
+
+                    document.getElementById('mtbInput').value = "";
+                    document.getElementById('mtbInput').focus();
+                    const audio = new Audio('material/success.mp3');
+                    audio.play();
+                } else {
+                    alert('Please enter a valid SKU ID.');
+                }
+            }
+        });
+
+        function alert(text_want_to_alert) {
+            const audio = new Audio('material/error.mp3'); // Replace with your sound file path
+            audio.play();
+            Swal.fire({
+                // title: 'Cảnh báo!',
+                text: text_want_to_alert,
+                icon: 'error', // Use 'success' or 'error' as needed
+                showConfirmButton: false, // Hide the confirm button
+                timer: 4000, // Auto-close after 5 seconds
+                timerProgressBar: true, // Show a progress bar indicating time remaining
+                position: 'top', // Position it as in the example image
+                toast: true, // Display as a toast-style alert
+                background: 'red',
+                color: 'white'
+            });
+        }
+
+
+        function info(text_want_to_alert) {
+            const audio = new Audio('material/success.mp3'); // Replace with your sound file path
+            audio.play();
+            Swal.fire({
+                // title: 'Thông báo!',
+                text: text_want_to_alert,
+                icon: 'success', // Use 'success' or 'error' as needed
+                showConfirmButton: false, // Hide the confirm button
+                timer: 4000, // Auto-close after 5 seconds
+                timerProgressBar: true, // Show a progress bar indicating time remaining
+                position: 'top', // Position it as in the example image
+                toast: true, // Display as a toast-style alert
+                background: 'green',
+                color: 'white'
+            });
+        }
+
+        function warning(text_want_to_alert) {
+            Swal.fire({
+                // title: 'Thông báo!',
+                text: text_want_to_alert,
+                icon: 'warning', // Use 'success' or 'error' as needed
+                showConfirmButton: false, // Hide the confirm button
+                timer: 3000, // Auto-close after 5 seconds
+                timerProgressBar: true, // Show a progress bar indicating time remaining
+                position: 'top', // Position it as in the example image
+                toast: true, // Display as a toast-style alert
+                background: 'yellow',
+                color: 'black'
+            });
+        }
+    </script>
+</body>
+</html>
