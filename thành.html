@@ -230,7 +230,7 @@
 
                     document.getElementById('mtbInput').value = "";
                     document.getElementById('mtbInput').focus();
-                    const audio = new Audio('material/success.mp3');
+                    const audio = new Audio('success.mp3');
                     audio.play();
                 } else {
                     alert('Please enter a valid SKU ID.');
@@ -239,7 +239,7 @@
         });
 
         function alert(text_want_to_alert) {
-            const audio = new Audio('material/error.mp3'); // Replace with your sound file path
+            const audio = new Audio('error.mp3'); // Replace with your sound file path
             audio.play();
             Swal.fire({
                 // title: 'Cảnh báo!',
@@ -257,7 +257,7 @@
 
 
         function info(text_want_to_alert) {
-            const audio = new Audio('material/success.mp3'); // Replace with your sound file path
+            const audio = new Audio('success.mp3'); // Replace with your sound file path
             audio.play();
             Swal.fire({
                 // title: 'Thông báo!',
